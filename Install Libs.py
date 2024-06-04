@@ -42,16 +42,17 @@ def install_pip():
 
 def install_dependencies(libs):
     """
-    Installs required dependencies for the provided libraries.
+    Installs required dependencies for the provided libraries and logs any failures.
     
     Args:
         libs (dict): Dictionary of libraries grouped by category.
     """
-    print("Installing required dependencies...")
+    
     # List to keep track of all dependencies
     all_dependencies = set()
+    failed_libs = []  # List to keep track of failed installations
 
-    # Iterate over the libraries and collect their dependencies
+    # Collect dependencies
     for category, libraries in libs.items():
         for lib in libraries:
             try:
@@ -64,16 +65,26 @@ def install_dependencies(libs):
                         all_dependencies.update(dependencies)
             except sp.CalledProcessError:
                 print(f"Failed to get dependencies for {lib}.")
+                failed_libs.append(lib)  # Append the failed library to the list
+
     # Install each dependency
     for dep in all_dependencies:
-        if dep:  # Ensure dependency name is not empty
+        if dep:  
             try:
                 sp.check_call([sys.executable, '-m', 'pip', 'install', dep])
                 print(f"{dep} successfully installed.")
             except sp.CalledProcessError:
                 print(f"Failed to install {dep}.")
+                failed_libs.append(dep)  # Append the failed dependency to the list
 
-    print("All dependencies installed.")
+    # Display and log the failed installations
+    display_failed_libs(failed_libs)
+
+    if not failed_libs:
+        print("All dependencies installed successfully.")
+    else:
+        print("Some dependencies failed to install. Check Failed.txt for details.")
+
 
 
 def install_libraries(libs, method='pip'):
@@ -135,11 +146,11 @@ libs = {
 
     'Statistical Analysis and Machine Learning': [
         'scipy', 'pystan', 'pingouin', 'lifelines', 'pymc3', 'statsmodels',
-        'pyflux', 'sktime', 'prophet', 'darts', 'tsfresh', 'kats', 'autots'
+        'sktime', 'prophet', 'tsfresh', 'autots'
     ],
 
     'Big Data and Distributed Computing': [
-        'dask', 'pyspark', 'ray', 'koalas'
+        'dask', 'pyspark', 'koalas'
     ],
 
     'Messaging and Web Scraping': [
