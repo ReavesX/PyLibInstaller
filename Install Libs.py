@@ -1,8 +1,36 @@
 import subprocess  as sp 
+import os
 import sys         
-import platform    
 
-# Dictionary containing libraries grouped by category
+
+def display_failed_libs(failed_libs):
+    """
+    Displays the contents of the file containing all failed libraries
+    
+    Args: libs (list): list of python libraries. Ex: [numpy, pytorch, pygame, ..., etc]
+    
+    
+    Raises:
+        Permission Error: if the program doesn't have permission to write to the file
+        FileNotFound: if the file is not found -> create file
+        OSError: if the operation is not supported 
+    """
+    try:
+        with open("Failed.txt", 'a+') as myFile:
+            for lib in failed_libs:
+                myFile.write(f"{lib} installation failed\n")
+    except FileNotFoundError:
+        with open("Failed.txt", 'w') as myFile:
+            pass
+    except PermissionError:
+        print("Permission denied")
+    except OSError:
+        print("Unsupported operation")
+
+    os.system('cls')
+    print(myFile.read())
+
+
 def install_libraries(libs, method='pip'):
     """
     Install specified libraries using the specified method.
@@ -21,15 +49,20 @@ def install_libraries(libs, method='pip'):
     failed_libs = []
     for category, libraries in libs.items():
         for lib in libraries: 
-            try:                
-                sp.check_call([sys.executable, "-m", "pip", "install", "--upgrade", lib])
-                print(f"Successfully installed {lib}.")
-            except sp.CalledProcessError as e:
-                print(f'Error installing the {lib} library')
-                failed_libs.append(lib)
-    print(failed_libs)
+            if method == 'pip':
+                try:
+                    sp.check_call([sys.executable, "-m", "pip", "install", "--upgrade", lib])
+                    print(f"Successfully installed {lib}.")
+                except sp.CalledProcessError as e:
+                    failed_libs.append(lib)
+            else:
+                raise ValueError("Unsupported installation method")
+    display_failed_libs(failed_libs)
 
 #MAIN:
+
+
+# Dictionary containing libraries grouped by category
 libs = {
     'Prerequisites': [
         'wheel', 'setuptools', 'pip', 'cython'
